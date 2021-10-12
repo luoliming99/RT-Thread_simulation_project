@@ -60,7 +60,7 @@ struct rt_thread {
     char        name[RT_NAME_MAX];  /* 对象的名字 */
     rt_uint8_t  type;               /* 对象类型 */
     rt_uint8_t  flags;              /* 对象的状态 */
-    rt_list_t   list;               /* 对象的列表节点 */
+    rt_list_t   list;               /* 对象的链表节点 */
     
     rt_list_t    tlist;             /* 线程链表节点 */
     void        *sp;                /* 线程栈指针 */
@@ -107,19 +107,37 @@ typedef struct rt_thread *rt_thread_t;
 #define RT_THREAD_STAT_SIGNAL_SUSPEND   0x20
 #define RT_THREAD_STAT_SIGNAL_MASK      0xF0
 
-/* RT-Thread对象枚举定义 */
+/* RT-Thread对象类型枚举定义 */
 enum rt_object_class_type {
     RT_Object_Class_Thread = 0,     /* 对象是线程 */
+#ifdef RT_USING_SEMAPHORE
     RT_Object_Class_Semaphore,      /* 对象是信号量 */
+#endif
+#ifdef RT_USING_MUTEX
     RT_Object_Class_Mutex,          /* 对象是互斥量 */
+#endif
+#ifdef RT_USING_EVENT
     RT_Object_Class_Event,          /* 对象是事件 */
+#endif
+#ifdef RT_USING_MAILBOX
     RT_Object_Class_MailBox,        /* 对象是邮箱 */
+#endif
+#ifdef RT_USING_MESSAGEQUEUE
     RT_Object_Class_MessageQueue,   /* 对象是消息队列 */
+#endif
+#ifdef RT_USING_MEMHEAP
     RT_Object_Class_MemHeap,        /* 对象是内存堆 */
+#endif
+#ifdef RT_USING_MEMPOOL
     RT_Object_Class_Mempool,        /* 对象是内存池 */
+#endif
+#ifdef RT_USING_DEVICE
     RT_Object_Class_Device,         /* 对象是设备 */
-    RT_Object_Class_Timer,          /* 对象是定时器 */
+#endif
+//    RT_Object_Class_Timer,          /* 对象是定时器 */
+#ifdef RT_USING_MODULE
     RT_Object_Class_Module,         /* 对象是模块 */
+#endif
     RT_Object_Class_Unknown,        /* 对象是未知 */
     RT_Object_Class_Static = 0x80   /* 对象是静态对象 */
 };

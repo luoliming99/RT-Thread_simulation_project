@@ -30,19 +30,20 @@ int main (void)
     /* 硬件初始化 */
     
     /* 关中断 */
-//    rt_hw_interrupt_disable();
+    rt_hw_interrupt_disable();
     
-//    SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);
+    SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);
 
     /* 调度器初始化 */
     rt_system_scheduler_init();
     
     /* 初始化空闲线程 */
-//    rt_thread_idle_init();
+    rt_thread_idle_init();
        
     
     /* 初始化线程 */
     rt_thread_init(&rt_flag1_thread,                /* 线程控制块 */
+                    "rt_flag1_thread",              /* 线程名字，字符串形式 */
                     flag1_thread_entry,             /* 线程入口地址 */
                     RT_NULL,                        /* 线程形参 */
                    &rt_flag1_thread_stack[0],       /* 线程栈起始地址 */
@@ -53,6 +54,7 @@ int main (void)
     
     /* 初始化线程 */
     rt_thread_init(&rt_flag2_thread,                /* 线程控制块 */
+                    "rt_flag2_thread",              /* 线程名字，字符串形式 */
                     flag2_thread_entry,             /* 线程入口地址 */
                     RT_NULL,                        /* 线程形参 */
                    &rt_flag2_thread_stack[0],       /* 线程栈起始地址 */
@@ -77,7 +79,7 @@ void delay (uint32_t count)
 void flag1_thread_entry (void *p_arg)
 {
     for (; ;){
-#if 1
+#if 0
         flag1 = 1;
         delay(100);
         flag1 = 0;
@@ -98,7 +100,7 @@ void flag1_thread_entry (void *p_arg)
 void flag2_thread_entry (void *p_arg)
 {
     for (; ;){
-#if 1
+#if 0
         flag2 = 1;
         delay(100);
         flag2 = 0;

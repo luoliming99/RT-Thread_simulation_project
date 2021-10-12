@@ -34,6 +34,7 @@ rt_inline void rt_list_remove (rt_list_t *n)
 }
 
 rt_err_t rt_thread_init (struct rt_thread *thread,
+                         const char       *name,
                          void (*entry) (void *parameter),
                          void             *parameter,
                          void             *stack_start,

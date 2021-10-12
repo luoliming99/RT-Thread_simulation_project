@@ -79,7 +79,7 @@ void rt_schedule (void)
     register struct rt_thread *to_thread;
     register struct rt_thread *from_thread;
    
-#if 1    
+#if 0    
     /* 两个线程轮流切换 */
     if (rt_current_thread == rt_list_entry(rt_thread_priority_table[0].next,
                                            struct rt_thread,

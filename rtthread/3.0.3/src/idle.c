@@ -20,20 +20,19 @@ void rt_thread_idle_entry (void *parameter)
     }
 }
 
-//void rt_thread_idle_init (void)
-//{
-//    /* 初始化线程 */
-//    rt_thread_init(&idle,
-//                   "idle",
-//                    rt_thread_idle_entry,
-//                    RT_NULL,
-//                   &rt_thread_stack[0],
-//                    sizeof(rt_thread_stack),
-//                    RT_THREAD_PRIORITY_MAX-1);
-//    
-//    /* 将线程插入到就绪列表 */
-////    rt_list_insert_before(&(rt_thread_priority_table[RT_THREAD_PRIORITY_MAX-1]),
-////                          &(idle.list));
+void rt_thread_idle_init (void)
+{
+    /* 初始化线程 */
+    rt_thread_init(&idle,
+                   "idle",
+                    rt_thread_idle_entry,
+                    RT_NULL,
+                   &rt_thread_stack[0],
+                    sizeof(rt_thread_stack));
+    
+    /* 将线程插入到就绪列表 */
+    rt_list_insert_before(&(rt_thread_priority_table[RT_THREAD_PRIORITY_MAX-1]),
+                          &(idle.list));
 //    rt_thread_startup(&idle);
-//}
+}
 
