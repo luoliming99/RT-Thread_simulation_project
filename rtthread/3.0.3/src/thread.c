@@ -8,15 +8,14 @@ rt_err_t rt_thread_init (struct rt_thread *thread,
                          void (*entry) (void *parameter),
                          void             *parameter,
                          void             *stack_start,
-                         rt_uint32_t       stack_size)
+                         rt_uint32_t       stack_size,
+                         rt_uint8_t        priority)
 {
     /* 
      * 线程对象初始化 
      * 线程结构体开头部分的4个成员就是rt_object_t成员 
      */
-    rt_object_init((rt_object_t)thread, RT_Object_Class_Thread, name);
-    
-    
+    rt_object_init((rt_object_t)thread, RT_Object_Class_Thread, name); 
     rt_list_init(&(thread->tlist));
     
     thread->entry = (void *)entry;
@@ -31,27 +30,35 @@ rt_err_t rt_thread_init (struct rt_thread *thread,
                              thread->parameter,
     (void *)((char *)thread->stack_addr + thread->stack_size - 4));
     
-//    /* 初始化线程优先级 */
-//    thread->init_priority    = priority;
-//    thread->current_priority = priority;
-//    thread->number_mask = 0;
-//    
-//    /* 错误码和状态 */
-//    thread->error = RT_EOK;
-//    thread->stat  = RT_THREAD_INIT;
+    /* 初始化线程优先级 */
+    thread->init_priority    = priority;
+    thread->current_priority = priority;
+    thread->number_mask = 0;
+    
+    /* 错误码和状态 */
+    thread->error = RT_EOK;
+    thread->stat  = RT_THREAD_INIT;
     
     return RT_EOK;
 }
 
 void rt_thread_delay (rt_tick_t tick)
 {
-    struct rt_thread *thread;
+    register rt_base_t level;
+    register struct rt_thread *thread;
     
-    /* 获取当前线程的线程控制块 */
+    /* 禁能中断 */
+    level = rt_hw_interrupt_disable();
+    
     thread = rt_current_thread;
-    
-    /* 设置延时时间 */
     thread->remaining_tick = tick;
+    
+    /* 改变线程状态 */
+    thread->stat = RT_THREAD_SUSPEND;
+    rt_thread_ready_priority_group &= ~thread->number_mask;
+    
+    /* 使能中断 */
+    rt_hw_interrupt_enable(level);
     
     /* 进行系统调度 */
     rt_schedule();
@@ -108,9 +115,9 @@ rt_err_t rt_thread_startup (rt_thread_t thread)
     
     /* 改变线程的状态为挂起状态 */
     thread->stat = RT_THREAD_SUSPEND;
-    /* 然后恢复线程 */
+    /* 恢复线程，即将线程插入到就绪列表 */
     rt_thread_resume(thread);
-    
+   
     if (rt_thread_self() != RT_NULL) {
         /* 系统调度 */
         rt_schedule();

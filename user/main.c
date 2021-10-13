@@ -8,9 +8,6 @@
 rt_uint8_t flag1;
 rt_uint8_t flag2;
 
-extern rt_list_t rt_thread_priority_table[RT_THREAD_PRIORITY_MAX];
-
-
 ALIGN(RT_ALIGN_SIZE)
 /* 定义线程栈 */
 rt_uint8_t rt_flag1_thread_stack[512];
@@ -47,10 +44,11 @@ int main (void)
                     flag1_thread_entry,             /* 线程入口地址 */
                     RT_NULL,                        /* 线程形参 */
                    &rt_flag1_thread_stack[0],       /* 线程栈起始地址 */
-                    sizeof(rt_flag1_thread_stack)); /* 线程栈大小，单位为字节 */
+                    sizeof(rt_flag1_thread_stack),  /* 线程栈大小，单位为字节 */
+                    2);                             /* 优先级 */
     
     /* 将线程插入到就绪列表中 */
-    rt_list_insert_before(&(rt_thread_priority_table[0]), &(rt_flag1_thread.tlist));
+    rt_thread_startup(&rt_flag1_thread);
     
     /* 初始化线程 */
     rt_thread_init(&rt_flag2_thread,                /* 线程控制块 */
@@ -58,10 +56,11 @@ int main (void)
                     flag2_thread_entry,             /* 线程入口地址 */
                     RT_NULL,                        /* 线程形参 */
                    &rt_flag2_thread_stack[0],       /* 线程栈起始地址 */
-                    sizeof(rt_flag2_thread_stack)); /* 线程栈大小，单位为字节 */
+                    sizeof(rt_flag2_thread_stack),  /* 线程栈大小，单位为字节 */
+                    3);                             /* 优先级 */
     
     /* 将线程插入到就绪列表中 */
-    rt_list_insert_before(&(rt_thread_priority_table[1]), &(rt_flag2_thread.tlist));
+    rt_thread_startup(&rt_flag2_thread);
     
     /* 启动系统调度器 */
     rt_system_scheduler_start();
@@ -79,20 +78,10 @@ void delay (uint32_t count)
 void flag1_thread_entry (void *p_arg)
 {
     for (; ;){
-#if 0
-        flag1 = 1;
-        delay(100);
-        flag1 = 0;
-        delay(100);
-        
-        /* 线程切换，这里是手动切换 */
-        rt_schedule();
-#else
         flag1 = 1;
         rt_thread_delay(2);
         flag1 = 0;
         rt_thread_delay(2);
-#endif
     }
 }
 
@@ -100,20 +89,10 @@ void flag1_thread_entry (void *p_arg)
 void flag2_thread_entry (void *p_arg)
 {
     for (; ;){
-#if 0
-        flag2 = 1;
-        delay(100);
-        flag2 = 0;
-        delay(100);
-        
-        /* 线程切换，这里是手动切换 */
-        rt_schedule();
-#else
         flag2 = 1;
         rt_thread_delay(2);
         flag2 = 0;
         rt_thread_delay(2);
-#endif
     }
 }
 

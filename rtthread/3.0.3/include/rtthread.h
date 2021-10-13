@@ -33,12 +33,23 @@ rt_inline void rt_list_remove (rt_list_t *n)
     n->next = n->prev = n;
 }
 
+rt_inline rt_bool_t rt_list_isemtpy (rt_list_t *l)
+{
+    if (l->next == l && l->prev == l) {
+        return RT_TRUE;
+    }
+    return RT_FALSE;
+}
+
+int __rt_ffs (int value);
+
 rt_err_t rt_thread_init (struct rt_thread *thread,
                          const char       *name,
                          void (*entry) (void *parameter),
                          void             *parameter,
                          void             *stack_start,
-                         rt_uint32_t       stack_size);
+                         rt_uint32_t       stack_size,
+                         rt_uint8_t        priority);
     
 void rt_thread_delay (rt_tick_t tick);
 

@@ -19,6 +19,10 @@ char *rt_strncpy (char *dst, const char *src, rt_ubase_t n)
     return dst;
 }
 
+/**
+ * 将 8 位整形数的取值范围 0~255 作为数组__lowest_bit_bitmap[]的索引，
+ * 索引值第一个出现 1(从最低位开始)的位号作为该数组索引下的成员值
+ */
 const rt_uint8_t __lowest_bit_bitmap[] = {
     0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
     4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
@@ -37,7 +41,6 @@ const rt_uint8_t __lowest_bit_bitmap[] = {
     5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
     4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
 };
-
 
 /**
  * 该函数用于从一个32位的数中寻找第一个被置1的位（从低位开始），
@@ -69,4 +72,7 @@ int __rt_ffs (int value)
     /* 检查bits[31:24] */
     if (value & 0xFF000000)
         return __lowest_bit_bitmap[(value & 0xFF000000) >> 24] + 25;
+    
+    return 0;
 }
+
