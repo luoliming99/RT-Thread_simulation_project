@@ -29,7 +29,7 @@ void rt_thread_idle_init (void)
                     RT_NULL,
                    &rt_thread_stack[0],
                     sizeof(rt_thread_stack),
-                    31);
+                    RT_THREAD_PRIORITY_MAX - 1);
     rt_thread_startup(&idle);
 }
 

@@ -55,6 +55,7 @@ void rt_system_scheduler_start (void)
     rt_hw_context_switch_to((rt_uint32_t)&to_thread->sp);
                               
     /* 永远不会返回 */ 
+    to_thread = to_thread;
 }
 
 /* 系统调度 */
@@ -82,6 +83,8 @@ void rt_schedule (void)
         from_thread         = rt_current_thread;
         rt_current_thread   = to_thread;
         rt_hw_context_switch((rt_uint32_t)&from_thread->sp, (rt_uint32_t)&to_thread->sp);
+        /* 测试是否会执行这里 */
+        to_thread = to_thread;
     }
 }
 
@@ -116,7 +119,7 @@ void rt_schedule_remove_thread (struct rt_thread *thread)
     /* 将线程从就绪列表删除 */
     rt_list_remove(&(thread->tlist));
     /* 将线程就绪优先级组对应的位清除 */
-    if (rt_list_isemtpy(&(rt_thread_priority_table[thread->current_priority])))
+    if (rt_list_isempty(&(rt_thread_priority_table[thread->current_priority])))
     {
         rt_thread_ready_priority_group &= ~thread->number_mask;
     }

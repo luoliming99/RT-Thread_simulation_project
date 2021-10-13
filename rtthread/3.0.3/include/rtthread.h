@@ -33,7 +33,7 @@ rt_inline void rt_list_remove (rt_list_t *n)
     n->next = n->prev = n;
 }
 
-rt_inline rt_bool_t rt_list_isemtpy (rt_list_t *l)
+rt_inline rt_bool_t rt_list_isempty (rt_list_t *l)
 {
     if (l->next == l && l->prev == l) {
         return RT_TRUE;
@@ -41,17 +41,14 @@ rt_inline rt_bool_t rt_list_isemtpy (rt_list_t *l)
     return RT_FALSE;
 }
 
-int __rt_ffs (int value);
+/* 已知一个结构体里面的成员的地址，反推出该结构体的首地址 */
+#define rt_container_of(ptr, type, member) \
+    ((type *)((char *)ptr - (unsigned long)(&((type *)0)->member)))
 
-rt_err_t rt_thread_init (struct rt_thread *thread,
-                         const char       *name,
-                         void (*entry) (void *parameter),
-                         void             *parameter,
-                         void             *stack_start,
-                         rt_uint32_t       stack_size,
-                         rt_uint8_t        priority);
-    
-void rt_thread_delay (rt_tick_t tick);
+#define rt_list_entry(node, type, member) \
+    rt_container_of(node, type, member)
+
+int __rt_ffs (int value);
 
 char *rt_strncpy (char *dst, const char *src, rt_ubase_t n);
 
@@ -65,7 +62,34 @@ void rt_interrupt_leave (void);
                     
 void rt_thread_idle_init (void);
                     
-rt_err_t rt_thread_startup (rt_thread_t thread);
-                    
+/**< 定时器相关函数 */                
+rt_tick_t rt_tick_get (void);    
+void rt_syster_timer_init (void);
+void rt_timer_init (rt_timer_t  timer,
+                    const char *name,
+                    void (*timeout) (void *parameter),
+                    void       *parameter,
+                    rt_tick_t   time,
+                    rt_uint8_t  flag);
+rt_err_t rt_timer_stop (rt_timer_t timer);
+rt_err_t rt_timer_control (rt_timer_t timer, int cmd, void *arg);
+rt_err_t rt_timer_start (rt_timer_t timer);
+void rt_timer_check (void);
+void rt_thread_timeout (void *parameter);
+rt_err_t rt_thread_sleep (rt_tick_t tick);                    
+
+/**< 线程相关函数 */
+rt_err_t rt_thread_init (struct rt_thread *thread,
+                         const char       *name,
+                         void (*entry) (void *parameter),
+                         void             *parameter,
+                         void             *stack_start,
+                         rt_uint32_t       stack_size,
+                         rt_uint8_t        priority);
+rt_err_t rt_thread_delay (rt_tick_t tick);
+rt_err_t rt_thread_suspend(rt_thread_t thread);
+rt_err_t rt_thread_resume (rt_thread_t thread);
+rt_err_t rt_thread_startup (rt_thread_t thread);                         
+                         
 #endif
 

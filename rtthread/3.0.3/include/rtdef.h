@@ -1,6 +1,6 @@
 #ifndef __RT_DEF_H__
 #define __RT_DEF_H__
-#include "rtconfig.h"
+#include <rtconfig.h>
 
 /* RT-Thread 基础数据类型重定义 */
 typedef signed   char   rt_int8_t;
@@ -55,31 +55,6 @@ struct rt_list_node {
 };
 typedef struct rt_list_node rt_list_t;
 
-struct rt_thread {
-    /* rt 对象 */
-    char        name[RT_NAME_MAX];  /* 对象的名字 */
-    rt_uint8_t  type;               /* 对象类型 */
-    rt_uint8_t  flags;              /* 对象的状态 */
-    rt_list_t   list;               /* 对象的链表节点 */
-    
-    rt_list_t    tlist;             /* 线程链表节点 */
-    void        *sp;                /* 线程栈指针 */
-    void        *entry;             /* 线程入口地址 */
-    void        *parameter;         /* 线程形参 */
-    void        *stack_addr;        /* 线程栈起始地址 */
-    rt_uint32_t  stack_size;        /* 线程栈大小，单位为字节 */
-    
-    rt_ubase_t   remaining_tick;    /* 用于实现阻塞延时 */
-    
-    rt_uint8_t   current_priority;  /* 当前优先级 */
-    rt_uint8_t   init_priority;     /* 初始优先级 */
-    rt_uint32_t  number_mask;       /* 当前优先级掩码 */
-    
-    rt_err_t     error;             /* 错误码 */
-    rt_uint8_t   stat;              /* 线程的状态 */
-};
-typedef struct rt_thread *rt_thread_t;
-
 /* RT-Thread 错误码重定义 */
 #define RT_EOK              0   /* There is no error */
 #define RT_ERROR            1   /* A generic error happens */
@@ -93,51 +68,19 @@ typedef struct rt_thread *rt_thread_t;
 #define RT_EINTR            9   /* Interrupted system call */
 #define RT_EINVAL           10  /* Invalid argument */
 
-/* 线程状态定义 */
-#define RT_THREAD_INIT                  0x00                /* 初始态 */
-#define RT_THREAD_READY                 0x01                /* 就绪态 */
-#define RT_THREAD_SUSPEND               0x02                /* 挂起态 */
-#define RT_THREAD_RUNNING               0x03                /* 运行态 */
-#define RT_THREAD_BLOCK                 RT_THREAD_SUSPEND   /* 阻塞态 */
-#define RT_THREAD_CLOSE                 0x04                /* 关闭态 */
-#define RT_THREAD_STAT_MASK             0x0F         
-
-#define RT_THREAD_STAT_SIGNAL           0x10
-#define RT_THREAD_STAT_SIGNAL_READY    (RT_THREAD_STAT_SIGNAL | RT_THREAD_READY)
-#define RT_THREAD_STAT_SIGNAL_SUSPEND   0x20
-#define RT_THREAD_STAT_SIGNAL_MASK      0xF0
-
 /* RT-Thread对象类型枚举定义 */
 enum rt_object_class_type {
     RT_Object_Class_Thread = 0,     /* 对象是线程 */
-#ifdef RT_USING_SEMAPHORE
     RT_Object_Class_Semaphore,      /* 对象是信号量 */
-#endif
-#ifdef RT_USING_MUTEX
     RT_Object_Class_Mutex,          /* 对象是互斥量 */
-#endif
-#ifdef RT_USING_EVENT
     RT_Object_Class_Event,          /* 对象是事件 */
-#endif
-#ifdef RT_USING_MAILBOX
     RT_Object_Class_MailBox,        /* 对象是邮箱 */
-#endif
-#ifdef RT_USING_MESSAGEQUEUE
     RT_Object_Class_MessageQueue,   /* 对象是消息队列 */
-#endif
-#ifdef RT_USING_MEMHEAP
     RT_Object_Class_MemHeap,        /* 对象是内存堆 */
-#endif
-#ifdef RT_USING_MEMPOOL
     RT_Object_Class_Mempool,        /* 对象是内存池 */
-#endif
-#ifdef RT_USING_DEVICE
     RT_Object_Class_Device,         /* 对象是设备 */
-#endif
-//    RT_Object_Class_Timer,          /* 对象是定时器 */
-#ifdef RT_USING_MODULE
+    RT_Object_Class_Timer,          /* 对象是定时器 */
     RT_Object_Class_Module,         /* 对象是模块 */
-#endif
     RT_Object_Class_Unknown,        /* 对象是未知 */
     RT_Object_Class_Static = 0x80   /* 对象是静态对象 */
 };
@@ -189,6 +132,82 @@ enum rt_object_info_type {
 #endif
     RT_Object_Info_Unknown,         /* 对象未知 */
 };
+
+#define RT_TIMER_SKIP_LIST_LEVEL    1
+
+/**< \brief 定时器状态宏定义 */
+#define RT_TIMER_FLAG_DEACTIVATED   0X0 /* 定时器没有激活 */
+#define RT_TIMER_FLAG_ACTIVATED     0x1 /* 定时器已经激活 */
+#define RT_TIMER_FLAG_ONE_SHOT      0x0 /* 单次定时 */
+#define RT_TIMER_FLAG_PERIODIC      0x2 /* 周期定时 */
+#define RT_TIMER_FLAG_HARD_TIMER    0x0 /* 硬件定时器，定时器回调函数在tick isr中调用 */
+#define RT_TIMER_FLAG_SOFT_TIMER    0x4 /* 软件定时器，定时器回调函数在定时器线程中调用 */
+
+/**< \brief 定时器控制命令宏定义 */
+#define RT_TIMER_CTRL_SET_TIME      0x0     /* 设置定时器定时时间 */
+#define RT_TIMER_CTRL_GET_TIME      0x1     /* 获取定时器定时时间 */
+#define RT_TIMER_CTRL_SET_ONESHOT   0x2     /* 修改定时器为一次定时 */
+#define RT_TIMER_CTRL_SET_PERIODIC  0x3     /* 修改定时器为周期定时 */
+
+#define RT_TICK_MAX                 0xFFFFFFFF
+
+/**< \brief 定时器控制块 */
+struct rt_timer {
+    struct rt_object parent;                    /* 从rt_object继承 */
+        
+    rt_list_t row[RT_TIMER_SKIP_LIST_LEVEL];    /* 节点 */
+    
+    void (*timeout_func) (void *parameter);     /* 超时函数 */
+    void            *parameter;                 /* 超时函数的形参 */
+    
+    rt_tick_t        init_tick;                 /* 定时器实际需要延时的时间 */
+    rt_tick_t        timeout_tick;              /* 定时器实际超时的系统节拍数 */
+};
+typedef struct rt_timer *rt_timer_t;
+
+/**< \brief 线程状态定义 */
+#define RT_THREAD_INIT                  0x00                /* 初始态 */
+#define RT_THREAD_READY                 0x01                /* 就绪态 */
+#define RT_THREAD_SUSPEND               0x02                /* 挂起态 */
+#define RT_THREAD_RUNNING               0x03                /* 运行态 */
+#define RT_THREAD_BLOCK                 RT_THREAD_SUSPEND   /* 阻塞态 */
+#define RT_THREAD_CLOSE                 0x04                /* 关闭态 */
+#define RT_THREAD_STAT_MASK             0x0F         
+
+#define RT_THREAD_STAT_SIGNAL           0x10
+#define RT_THREAD_STAT_SIGNAL_READY    (RT_THREAD_STAT_SIGNAL | RT_THREAD_READY)
+#define RT_THREAD_STAT_SIGNAL_SUSPEND   0x20
+#define RT_THREAD_STAT_SIGNAL_MASK      0xF0
+
+/**< \brief 线程控制块 */
+struct rt_thread {
+    /* rt 对象 */
+    char        name[RT_NAME_MAX];  /* 对象的名字 */
+    rt_uint8_t  type;               /* 对象类型 */
+    rt_uint8_t  flags;              /* 对象的状态 */
+    rt_list_t   list;               /* 对象的链表节点 */
+    
+    rt_list_t    tlist;             /* 线程链表节点 */
+    void        *sp;                /* 线程栈指针 */
+    void        *entry;             /* 线程入口地址 */
+    void        *parameter;         /* 线程形参 */
+    void        *stack_addr;        /* 线程栈起始地址 */
+    rt_uint32_t  stack_size;        /* 线程栈大小，单位为字节 */
+    
+    rt_ubase_t   remaining_tick;    /* 用于实现阻塞延时 */
+    
+    rt_uint8_t   current_priority;  /* 当前优先级 */
+    rt_uint8_t   init_priority;     /* 初始优先级 */
+    rt_uint32_t  number_mask;       /* 当前优先级掩码 */
+    
+    rt_err_t     error;             /* 错误码 */
+    rt_uint8_t   stat;              /* 线程的状态 */
+    
+    struct rt_timer thread_timer;   /* 内置的线程定时器 */
+};
+typedef struct rt_thread *rt_thread_t;
+
+
 
 #endif /* __RT_DEF_H__ */
 
