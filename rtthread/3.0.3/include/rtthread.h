@@ -79,17 +79,20 @@ void rt_thread_timeout (void *parameter);
 rt_err_t rt_thread_sleep (rt_tick_t tick);                    
 
 /**< 线程相关函数 */
+rt_thread_t rt_thread_self (void);
 rt_err_t rt_thread_init (struct rt_thread *thread,
                          const char       *name,
                          void (*entry) (void *parameter),
                          void             *parameter,
                          void             *stack_start,
                          rt_uint32_t       stack_size,
-                         rt_uint8_t        priority);
+                         rt_uint8_t        priority,
+                         rt_uint32_t       tick);
 rt_err_t rt_thread_delay (rt_tick_t tick);
 rt_err_t rt_thread_suspend(rt_thread_t thread);
 rt_err_t rt_thread_resume (rt_thread_t thread);
-rt_err_t rt_thread_startup (rt_thread_t thread);                         
+rt_err_t rt_thread_startup (rt_thread_t thread);
+rt_err_t rt_thread_yield (void);                         
                          
 #endif
 

@@ -83,8 +83,6 @@ void rt_schedule (void)
         from_thread         = rt_current_thread;
         rt_current_thread   = to_thread;
         rt_hw_context_switch((rt_uint32_t)&from_thread->sp, (rt_uint32_t)&to_thread->sp);
-        /* 测试是否会执行这里 */
-        to_thread = to_thread;
     }
 }
 
